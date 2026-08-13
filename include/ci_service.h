@@ -28,10 +28,12 @@ class CiService {
   };
 
   bool begin();
+  bool requestUser(const AppConfig::DroneConfig& config);
   bool requestPreview(const AppConfig::CiTarget& target,
                       const AppConfig::DroneConfig& config);
   bool confirmTrigger();
   Snapshot snapshot() const;
+  String username() const;
   bool isMonitoring() const;
 
  private:
@@ -43,8 +45,15 @@ class CiService {
     AppConfig::DroneConfig config;
   };
 
+  struct UserTaskContext {
+    CiService* service;
+    AppConfig::DroneConfig config;
+  };
+
   static void taskEntry(void* argument);
+  static void userTaskEntry(void* argument);
   void taskLoop();
+  void runUser(const AppConfig::DroneConfig& config);
   void runPreview(const Command& command);
   void runTrigger(const Command& command);
   void update(const Snapshot& next);
@@ -52,7 +61,10 @@ class CiService {
 
   void* queue_ = nullptr;
   void* mutex_ = nullptr;
+  void* networkMutex_ = nullptr;
   Snapshot snapshot_;
+  String username_;
   Command previewCommand_;
+  bool userRequestInFlight_ = false;
   bool hasPreviewCommand_ = false;
 };

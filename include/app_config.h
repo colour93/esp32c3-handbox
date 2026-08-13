@@ -8,6 +8,7 @@ namespace AppConfig {
 
 constexpr char kFirmwareVersion[] = "0.1.0";
 constexpr char kProjectName[] = "colour93/esp32c3-handbox";
+constexpr size_t kMaxHostMappings = 10;
 
 struct CiTarget {
   String namespaceName;
@@ -15,10 +16,17 @@ struct CiTarget {
   String branch;
 };
 
+struct HostMapping {
+  String hostname;
+  String address;
+};
+
 struct DroneConfig {
   String baseUrl;
   String token;
   bool verifySsl = true;
+  HostMapping hosts[kMaxHostMappings];
+  size_t hostCount = 0;
 };
 
 String defaultDeviceName();

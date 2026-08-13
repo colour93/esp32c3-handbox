@@ -27,6 +27,7 @@
 
 - Wi-Fi、设备名称、亮度、自动息屏时间和旋钮方向
 - Drone 地址、Token、HTTPS 校验开关
+- 可选的 `hostname / IP address` Hosts 映射，用于无法解析内网 DNS 的 Drone；HTTPS 仍按 hostname 校验证书
 - 1 至 10 个 `namespace / repo / branch` CI 目标
 
 设备名称变更后固件会自动重启，使 OLED、GATT 名称和广播名保持一致。中文界面使用 U8g2 的 `u8g2_font_wqy12_t_gb2312` 字体。
@@ -36,9 +37,13 @@
 - 旋转：移动菜单或选择 CI 目标
 - 短按：进入页面；CI 页面先预览最近 50 条构建中匹配分支的提交，再次短按才触发
 - 长按：返回；CI 构建会留在后台每三秒轮询，最长监控 30 分钟
-- 息屏后的第一次输入：仅唤醒，不执行导航；CI 监控期间暂停自动息屏
+- 息屏和唤醒使用页面切换式遮罩动画；息屏后的第一次输入仅唤醒、不执行导航，CI 监控期间暂停自动息屏
+
+进入 CI 页面后会在后台调用 Drone `GET /api/user`，成功后在页面左下角显示当前 Token 对应的 `@login`。
 
 状态页显示 64 位开机时长、设备名称、BLE 状态、Wi-Fi/SSID/RSSI 和 IP 获取状态。关于页显示固件版本、构建时 Git short SHA 与仓库名。
+
+串口波特率为 `115200`，输出启动、配置 revision、Wi-Fi、BLE 广播/连接、息屏及 CI 请求状态日志。Drone Token 和 Wi-Fi 密码不会写入日志。
 
 ## 构建
 

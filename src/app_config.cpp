@@ -23,6 +23,18 @@ constexpr char kManifestTemplate[] PROGMEM = R"json(
     { "id": "drone_token", "type": "password", "label": "Drone Token", "required": true, "maxLength": 512 },
     { "id": "drone_verify_ssl", "type": "boolean", "label": "验证 HTTPS", "default": true },
     {
+      "id": "hosts",
+      "type": "objectList",
+      "label": "Hosts",
+      "minItems": 0,
+      "maxItems": 10,
+      "default": [],
+      "itemFields": [
+        { "id": "hostname", "type": "text", "label": "Hostname", "required": true, "maxLength": 253 },
+        { "id": "address", "type": "text", "label": "IP 地址", "required": true, "maxLength": 45 }
+      ]
+    },
+    {
       "id": "ci_targets",
       "type": "objectList",
       "label": "CI 目标",
@@ -70,6 +82,20 @@ DroneConfig droneConfig(const EspBleConfig::Manager& config) {
   result.baseUrl = config.get<String>("drone_base_url", "");
   result.token = config.get<String>("drone_token", "");
   result.verifySsl = config.get<bool>("drone_verify_ssl", true);
+  JsonArrayConst hosts = config.get<JsonArrayConst>("hosts", JsonArrayConst());
+  for (JsonObjectConst value : hosts) {
+    if (result.hostCount >= kMaxHostMappings) {
+      break;
+    }
+    String hostname = value["hostname"] | "";
+    String address = value["address"] | "";
+    hostname.trim();
+    address.trim();
+    if (hostname.isEmpty() || address.isEmpty()) {
+      continue;
+    }
+    result.hosts[result.hostCount++] = {hostname, address};
+  }
   return result;
 }
 
