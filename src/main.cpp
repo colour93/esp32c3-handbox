@@ -53,6 +53,7 @@ uint32_t restartAt = 0;
 uint32_t previousMillis = 0;
 uint32_t ciSelectionChangedAt = 0;
 uint64_t uptimeMillis = 0;
+bool ciUserLookupAttempted = false;
 CiService::Stage lastNotifiedCiStage = CiService::Stage::kIdle;
 char notificationText[40] = {};
 wl_status_t lastLoggedWifiStatus = WL_NO_SHIELD;
@@ -376,7 +377,6 @@ void enterCiPage() {
       AppConfig::loadCiTargets(deviceConfig, ciTargets, kMaxCiTargets);
   ciTargetIndex = 0;
   ciSelectionChangedAt = millis();
-  ciService.requestUser(AppConfig::droneConfig(deviceConfig));
   const CiService::Snapshot state = ciService.snapshot();
   for (size_t index = 0; index < ciTargetCount; ++index) {
     if (sameCiTarget(state.target, ciTargets[index])) {
@@ -609,6 +609,19 @@ void notifyBackgroundCiResult() {
   astra_push_pop_up(notificationText, 3000);
 }
 
+void requestCiUserWhenSafe() {
+  if (ciUserLookupAttempted) {
+    return;
+  }
+  const CiService::Snapshot state = ciService.snapshot();
+  if (state.stage != CiService::Stage::kMonitoring &&
+      state.stage != CiService::Stage::kFinished) {
+    return;
+  }
+  ciUserLookupAttempted = true;
+  ciService.requestUser(AppConfig::droneConfig(deviceConfig));
+}
+
 }  // namespace
 
 void setup() {
@@ -658,6 +671,7 @@ void loop() {
   handleInput();
   manageScreenTimeout();
   notifyBackgroundCiResult();
+  requestCiUserWhenSafe();
   if (timeReached(restartAt)) {
     ESP.restart();
   }
